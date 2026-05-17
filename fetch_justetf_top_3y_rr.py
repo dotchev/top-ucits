@@ -1,4 +1,17 @@
-"""Fetch top JustETF funds by 3-year return/risk ratio."""
+"""Fetch top JustETF funds by 3-year return/risk ratio.
+
+Fetches ETF data from justetf.com across multiple strategy categories
+(Long-only, Active, Short & Leveraged), merges duplicates, and ranks
+funds by their 3-year return/risk ratio in descending order.
+
+Sends 4 HTTP requests to justetf.com:
+    1 GET to fetch the search page and extract a counter value,
+    3 POSTs to fetch funds for each strategy category.
+
+Input: HTTP requests to justetf.com search API (no local input files).
+Output: justetf-top-3y-rr.csv — all funds sorted by 3-year return/risk
+    ratio descending. Includes all properties from JustETF plus strategy.
+"""
 
 from __future__ import annotations
 
@@ -27,23 +40,45 @@ COUNTER_RE = re.compile(
 )
 
 OUTPUT_COLUMNS = [
-    "rank",
-    "isin",
-    "wkn",
     "ticker",
     "name",
-    "three_year_return_risk",
-    "three_year_return_percent",
-    "three_year_volatility_percent",
-    "one_year_return_risk",
-    "five_year_return_risk",
+    "isin",
+    "wkn",
+    "valor_number",
     "currency",
     "ter_percent",
-    "fund_size_m",
-    "inception_date",
     "distribution",
     "replication",
+    "fund_size_m",
+    "number_of_holdings",
+    "inception_date",
     "domicile_country",
+    "has_securities_lending",
+    "sustainable",
+    "week_return_percent",
+    "month_return_percent",
+    "three_month_return_percent",
+    "six_month_return_percent",
+    "ytd_return_percent",
+    "one_year_return_percent",
+    "one_year_return_risk",
+    "one_year_volatility_percent",
+    "one_year_max_drawdown_percent",
+    "one_year_dividend_yield_percent",
+    "year_return_1_percent",
+    "year_return_2_percent",
+    "year_return_3_percent",
+    "year_return_4_percent",
+    "three_year_return_percent",
+    "three_year_return_risk",
+    "three_year_volatility_percent",
+    "three_year_max_drawdown_percent",
+    "five_year_return_percent",
+    "five_year_return_risk",
+    "five_year_volatility_percent",
+    "five_year_max_drawdown_percent",
+    "max_drawdown_percent",
+    "current_dividend_yield_percent",
     "strategy",
 ]
 
@@ -133,25 +168,47 @@ def merged_rows(results: list[FetchResult]) -> list[dict[str, Any]]:
     return list(rows_by_isin.values())
 
 
-def output_row(rank: int, row: dict[str, Any]) -> dict[str, Any]:
+def output_row(row: dict[str, Any]) -> dict[str, Any]:
     return {
-        "rank": rank,
         "isin": row.get("isin"),
         "wkn": row.get("wkn"),
         "ticker": row.get("ticker"),
+        "valor_number": row.get("valorNumber"),
         "name": clean_text(row.get("name")),
-        "three_year_return_risk": parse_number(row.get("threeYearReturnPerRiskCUR")),
-        "three_year_return_percent": parse_number(row.get("threeYearReturnCUR")),
-        "three_year_volatility_percent": parse_number(row.get("threeYearVolatilityCUR")),
-        "one_year_return_risk": parse_number(row.get("yearReturnPerRiskCUR")),
-        "five_year_return_risk": parse_number(row.get("fiveYearReturnPerRiskCUR")),
         "currency": clean_text(row.get("fundCurrency")),
         "ter_percent": parse_number(row.get("ter")),
-        "fund_size_m": parse_number(row.get("fundSize")),
-        "inception_date": parse_date(row.get("inceptionDate")),
         "distribution": clean_text(row.get("distributionPolicy")),
         "replication": clean_text(row.get("replicationMethod")),
+        "fund_size_m": parse_number(row.get("fundSize")),
+        "number_of_holdings": parse_number(row.get("numberOfHoldings")),
+        "inception_date": parse_date(row.get("inceptionDate")),
         "domicile_country": clean_text(row.get("domicileCountry")),
+        "has_securities_lending": clean_text(row.get("hasSecuritiesLending")),
+        "sustainable": clean_text(row.get("sustainable")),
+        "week_return_percent": parse_number(row.get("weekReturnCUR")),
+        "month_return_percent": parse_number(row.get("monthReturnCUR")),
+        "three_month_return_percent": parse_number(row.get("threeMonthReturnCUR")),
+        "six_month_return_percent": parse_number(row.get("sixMonthReturnCUR")),
+        "ytd_return_percent": parse_number(row.get("ytdReturnCUR")),
+        "one_year_return_percent": parse_number(row.get("yearReturnCUR")),
+        "one_year_return_risk": parse_number(row.get("yearReturnPerRiskCUR")),
+        "one_year_volatility_percent": parse_number(row.get("yearVolatilityCUR")),
+        "one_year_max_drawdown_percent": parse_number(row.get("yearMaxDrawdownCUR")),
+        "one_year_dividend_yield_percent": parse_number(row.get("yearDividendYield")),
+        "year_return_1_percent": parse_number(row.get("yearReturn1CUR")),
+        "year_return_2_percent": parse_number(row.get("yearReturn2CUR")),
+        "year_return_3_percent": parse_number(row.get("yearReturn3CUR")),
+        "year_return_4_percent": parse_number(row.get("yearReturn4CUR")),
+        "three_year_return_percent": parse_number(row.get("threeYearReturnCUR")),
+        "three_year_return_risk": parse_number(row.get("threeYearReturnPerRiskCUR")),
+        "three_year_volatility_percent": parse_number(row.get("threeYearVolatilityCUR")),
+        "three_year_max_drawdown_percent": parse_number(row.get("threeYearMaxDrawdownCUR")),
+        "five_year_return_percent": parse_number(row.get("fiveYearReturnCUR")),
+        "five_year_return_risk": parse_number(row.get("fiveYearReturnPerRiskCUR")),
+        "five_year_volatility_percent": parse_number(row.get("fiveYearVolatilityCUR")),
+        "five_year_max_drawdown_percent": parse_number(row.get("fiveYearMaxDrawdownCUR")),
+        "max_drawdown_percent": parse_number(row.get("maxDrawdownCUR")),
+        "current_dividend_yield_percent": parse_number(row.get("currentDividendYield")),
         "strategy": row.get("strategy"),
     }
 
@@ -182,8 +239,8 @@ def main() -> None:
     with open("justetf-top-3y-rr.csv", "w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=OUTPUT_COLUMNS)
         writer.writeheader()
-        for rank, row in enumerate(ranked_rows, start=1):
-            writer.writerow(output_row(rank, row))
+        for row in ranked_rows:
+            writer.writerow(output_row(row))
 
     fetched = sum(len(result.rows) for result in results)
     print(f"Fetched rows: {fetched}")
