@@ -20,6 +20,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from html import unescape
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -223,7 +224,8 @@ def main() -> None:
 
     rows = merged_rows(results)
 
-    with open("justetf-funds.csv", "w", newline="", encoding="utf-8") as file:
+    output_path = Path("justetf-funds.csv").resolve()
+    with open(output_path, "w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=OUTPUT_COLUMNS)
         writer.writeheader()
         for row in rows:
@@ -233,6 +235,7 @@ def main() -> None:
     print(f"Fetched rows: {fetched}")
     print(f"Unique funds: {len(rows)}")
     print(f"Saved rows: {len(rows)}")
+    print(f"Output file: {output_path}")
 
 
 if __name__ == "__main__":

@@ -46,6 +46,7 @@ On completion it overwrites `justetf-funds.csv` and prints a summary:
 Fetched rows: <raw rows across all strategies>
 Unique funds: <after merging by ISIN>
 Saved rows: <written to CSV>
+Output file: <absolute path to justetf-funds.csv>
 ```
 
 A typical run fetches ~4,800 raw rows and writes ~4,200 unique funds.
