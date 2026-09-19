@@ -71,7 +71,7 @@ OUTPUT_COLUMNS = [
     "Y3_ret_%",     # 3rd most recent calendar-year return, percent
     "Y4_ret_%",     # 4th most recent calendar-year return, percent
     "3Y_ret_%",     # trailing 3-year return, percent
-    "3Y_rr",        # trailing 3-year return/risk ratio (primary sort key)
+    "3Y_rr",        # trailing 3-year return/risk ratio
     "3Y_vol_%",     # trailing 3-year volatility, percent
     "3Y_mdd_%",     # trailing 3-year max drawdown, percent
     "5Y_ret_%",     # trailing 5-year return, percent
